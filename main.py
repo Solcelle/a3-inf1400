@@ -1,6 +1,5 @@
-import vector
 import config
-import random
+import map
 import pygame
 
 '''Object'''
@@ -15,45 +14,67 @@ class Object():
 '''Move object'''
 class Move_object():
 	def move(self):
-		self.vector_pos.x += self.vector_vel.x * self.speed * time_passed
-		self.vector_pos.y += self.vector_vel.y * self.speed * time_passed
-	def move_dist(self):
-		return pygame.math.Vector2(self.vector_vel * self.speed * time_passed)
+		if self.vector_vel.x != 0 or self.vector_vel.y != 0:
+			self.vector_vel = pygame.math.Vector2.normalize(self.vector_vel)
+		self.vector_pos += pygame.math.Vector2(self.vector_vel * self.speed * time_passed)
 
 '''Draw object'''
 class Draw_object():
 	def draw_poligon(self):
-		pygame.draw.polygon(config.screen, self.color, self.points)
+		pygame.draw.polygon(config.screen, self.color, [p + self.vector_pos for p in self.points])
+	
+class Map():
+	
 
 '''Triangle'''
 class Triangle(Object, Move_object, Draw_object):
 	def __init__(self, x, y, height, width, speed, color):
 		super().__init__(x, y, height, width, speed, color)
+		self.points = (pygame.math.Vector2(0, self.height * 0.75), pygame.math.Vector2(self.width / 2, self.height * -0.25), pygame.math.Vector2(self.width / -2, self.height * -0.25))
+		self.keys = [False, False, False, False, False]
+		self.moving_dir = 0
+		self.facing_dir = pygame.math.Vector2(0, 0).angle_to(self.points[0])
 		self.vector_vel = pygame.math.Vector2(0, 0)
-		self.center = pygame.math.Vector2(x, y + (self.height * 0.75))
-		self.points = (pygame.math.Vector2(self.vector_pos.x, self.vector_pos.y), pygame.math.Vector2(self.vector_pos.x + self.width / 2, self.vector_pos.y + self.height), pygame.math.Vector2(self.vector_pos.x - self.width / 2, self.vector_pos.y + self.height))
-		self.rot_speed = 4
+		self.center = pygame.math.Vector2(x, (y + (self.height * 0.75)))
+		self.rot_speed = 10
 
 	def update(self):
-		# Move object
-		self.move_points(self.move_dist())
-		# Rotate object
-		self.points = self.rotate(self.rot_speed)
-		# Draw object
-		self.draw_poligon()
+		self.player_inputs()			# Executes player inputs
+		self.move()						# Move object
+		self.player_direction()			# Updates objects direction
+		self.rotate()					# Rotates object
+		self.draw_poligon()				# Draw object
 	
-	def rotate(self, angle):
-		rotated_points = []
-		for p in self.points:
-			p -= self.center							# Set points around origin
-			p = pygame.math.Vector2(p).rotate(angle)	# Rotate points
-			p += self.center							# Set rotated points around original position
-			rotated_points.append(p)
-		return rotated_points
+	# Rotates object by angle(-180 to 180)
+	def rotate(self):
+		a = (self.moving_dir - self. facing_dir + 180) % 360 - 180
+		if abs(a) > 8:
+			# Rotate right
+			if a > 0:
+				self.points = [pygame.math.Vector2(p).rotate(self.rot_speed) for p in self.points]
+			# Rotate left
+			if a < 0:
+				self.points = [pygame.math.Vector2(p).rotate(-self.rot_speed) for p in self.points]
+		
+	def player_direction(self):
+		if not (self.vector_vel.x == 0 and self.vector_vel.y == 0):
+			self.moving_dir = pygame.math.Vector2(0, 0).angle_to(self.vector_vel)
+		self.facing_dir = pygame.math.Vector2(0, 0).angle_to(self.points[0])
 	
-	def move_points(self, dist):
-		self.points = [p + dist for p in self.points]
-		self.center += dist
+	# Executes players inputs
+	def player_inputs(self):
+		if any(self.keys):
+			if self.keys[0]:	# Up
+				self.vector_vel += pygame.math.Vector2(0, -1)
+			if self.keys[1]:	# Left
+				self.vector_vel += pygame.math.Vector2(-1, 0)
+			if self.keys[2]:	# Down
+				self.vector_vel += pygame.math.Vector2(0, 1)
+			if self.keys[3]:	# Right
+				self.vector_vel += pygame.math.Vector2(1, 0)
+		else:
+			self.vector_vel = pygame.math.Vector2(0, 0)
+
 
 def check_events():
 	# Check for events
@@ -69,9 +90,34 @@ def check_events():
 			if event.key == pygame.K_ESCAPE:
 				pygame.quit()
 				exit()
+			if event.key == pygame.K_w:
+				p1.keys[0] = True
+			if event.key == pygame.K_a:
+				p1.keys[1] = True
+			if event.key == pygame.K_s:
+				p1.keys[2] = True
+			if event.key == pygame.K_d:
+				p1.keys[3] = True
+		if event.type == pygame.KEYUP:
+			if event.key == pygame.K_w:
+				p1.keys[0] = False
+			if event.key == pygame.K_a:
+				p1.keys[1] = False
+			if event.key == pygame.K_s:
+				p1.keys[2] = False
+			if event.key == pygame.K_d:
+				p1.keys[3] = False
 
-triangle = Triangle(100, 100, 20, 20, 5, (100, 0, 100))
-triangle.vector_vel.x = 10
+tile_size = 40
+def grid():
+	i = 1
+	while i < 27:
+		pygame.draw.line(config.screen, (255, 255, 255), (i * tile_size, 0), (i * tile_size, config.SCREEN_Y))
+		if i < 18:
+			pygame.draw.line(config.screen, (255, 255, 255), (0, i * tile_size), (config.SCREEN_X, i * tile_size))
+		i += 1
+
+p1 = Triangle(100, 100, 30, 20, 800, (100, 0, 100))
 
 # Game loop
 while True:
@@ -85,9 +131,8 @@ while True:
 	config.screen.fill(config.BACKGROUND_COLOR)
 
 	# Update boids, hoiks and obstacles
-	# for obj in objects:
-	# 	obj.update()
-	triangle.update()
+	p1.update()
+	grid()
 
 	# Update display too show new frame
 	pygame.display.update()

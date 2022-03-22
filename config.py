@@ -1,8 +1,8 @@
 import pygame
 
 # Display
-SCREEN_X = 1000
-SCREEN_Y = 700
+SCREEN_X = 1080
+SCREEN_Y = 720
 screen = pygame.display.set_mode((SCREEN_X, SCREEN_Y), 0, 32)
 
 # Tickrate

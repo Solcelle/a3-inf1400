@@ -58,3 +58,5 @@ def direction_to(vec1, vec2):
 # Returns a random vector
 def random_vector():
     return Vector2(random.random() * 2.0 - 1.0, random.random() * 2.0 - 1.0)
+
+# Rotate vector
