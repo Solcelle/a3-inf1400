@@ -17,43 +17,49 @@ class Move_object():
 	def move(self):
 		self.vector_pos.x += self.vector_vel.x * self.speed * time_passed
 		self.vector_pos.y += self.vector_vel.y * self.speed * time_passed
+	def move_dist(self):
+		return pygame.math.Vector2(self.vector_vel * self.speed * time_passed)
 
 '''Draw object'''
 class Draw_object():
 	def draw_poligon(self):
-		self.box = pygame.draw.polygon(config.screen, self.color, self.points)
+		pygame.draw.polygon(config.screen, self.color, self.points)
 
 '''Triangle'''
 class Triangle(Object, Move_object, Draw_object):
 	def __init__(self, x, y, height, width, speed, color):
 		super().__init__(x, y, height, width, speed, color)
 		self.vector_vel = pygame.math.Vector2(0, 0)
-		self.center = (100, 100)
-		self.points = ((self.vector_pos.x, self.vector_pos.y), (self.vector_pos.x + self.width / 2, self.vector_pos.y + self.height), (self.vector_pos.x - self.width / 2, self.vector_pos.y + self.height))
-	
+		self.center = pygame.math.Vector2(x, y + (self.height * 0.75))
+		self.points = (pygame.math.Vector2(self.vector_pos.x, self.vector_pos.y), pygame.math.Vector2(self.vector_pos.x + self.width / 2, self.vector_pos.y + self.height), pygame.math.Vector2(self.vector_pos.x - self.width / 2, self.vector_pos.y + self.height))
+		self.rot_speed = 4
+
 	def update(self):
-		#self.points = ((self.vector_pos.x, self.vector_pos.y), (self.vector_pos.x + self.width / 2, self.vector_pos.y + self.height), (self.vector_pos.x - self.width / 2, self.vector_pos.y + self.height))
-		self.points = self.rotate()
+		# Move object
+		self.move_points(self.move_dist())
+		# Rotate object
+		self.points = self.rotate(self.rot_speed)
+		# Draw object
 		self.draw_poligon()
 	
-	def rotate(self):
-		mouse_pos = pygame.math.Vector2(pygame.mouse.get_pos())
-		angle = pygame.math.Vector2().angle_to(mouse_pos - self.center)
-		
-		rotated_point = [pygame.math.Vector2(p).rotate(angle) for p in self.points]
-		triangle_points = [(self.center + p) for p in rotated_point]
-		return triangle_points
+	def rotate(self, angle):
+		rotated_points = []
+		for p in self.points:
+			p -= self.center							# Set points around origin
+			p = pygame.math.Vector2(p).rotate(angle)	# Rotate points
+			p += self.center							# Set rotated points around original position
+			rotated_points.append(p)
+		return rotated_points
+	
+	def move_points(self, dist):
+		self.points = [p + dist for p in self.points]
+		self.center += dist
 
-		
-
-triangle = Triangle(0, 0, 20, 20, 100, (100, 0, 100))
-triangle.vector_vel.x = 10
-
-# Game loop
-while True:
+def check_events():
 	# Check for events
 	events = pygame.event.get()
 	for event in events:
+		
 		# Quits game if window is closed
 		if event.type == pygame.QUIT:
 			pygame.quit()
@@ -63,6 +69,15 @@ while True:
 			if event.key == pygame.K_ESCAPE:
 				pygame.quit()
 				exit()
+
+
+triangle = Triangle(100, 100, 20, 20, 5, (100, 0, 100))
+triangle.vector_vel.x = 10
+
+# Game loop
+while True:
+	# Checks for events
+	check_events()
 
 	# Sets amount of updates per second
 	time_passed = config.clock.tick(config.GAME_TICK) / 1000.0
