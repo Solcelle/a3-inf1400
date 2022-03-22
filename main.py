@@ -70,7 +70,6 @@ def check_events():
 				pygame.quit()
 				exit()
 
-
 triangle = Triangle(100, 100, 20, 20, 5, (100, 0, 100))
 triangle.vector_vel.x = 10
 

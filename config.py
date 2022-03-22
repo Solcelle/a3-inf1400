@@ -1,12 +1,12 @@
 import pygame
 
 # Display
-SCREEN_X = 1024
-SCREEN_Y = 648
+SCREEN_X = 1000
+SCREEN_Y = 700
 screen = pygame.display.set_mode((SCREEN_X, SCREEN_Y), 0, 32)
 
 # Tickrate
-GAME_TICK = 60
+GAME_TICK = 144
 clock = pygame.time.Clock()
 
 # Color
