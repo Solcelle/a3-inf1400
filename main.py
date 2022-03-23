@@ -4,15 +4,18 @@ import pygame
 
 '''Object'''
 class Object():
-	def __init__(self, x: float, y: float, height, width, speed, color):
+	def __init__(self, x: float, y: float, height, width, color):
 		self.vector_pos = pygame.math.Vector2(x, y)
 		self.height = height
 		self.width = width
-		self.speed = speed
 		self.color = color
 		
-'''Move object'''
-class Move_object():
+'''Moving object'''
+class Moving_object(Object):
+	def __init__(self, x, y, height, width, speed, color):
+		super().__init__(x, y, height, width, color)
+		self.speed = speed
+
 	def move(self):
 		if self.vector_vel.x != 0 or self.vector_vel.y != 0:
 			self.vector_vel = pygame.math.Vector2.normalize(self.vector_vel)
@@ -20,15 +23,43 @@ class Move_object():
 
 '''Draw object'''
 class Draw_object():
+	def draw_rect(self):
+		pygame.draw.rect(config.screen, self.color, (self.vector_pos.x, self.vector_pos.y, self.width, self.height))
 	def draw_poligon(self):
 		pygame.draw.polygon(config.screen, self.color, [p + self.vector_pos for p in self.points])
-	
-class Map():
-	
 
-'''Triangle'''
-class Triangle(Object, Move_object, Draw_object):
-	def __init__(self, x, y, height, width, speed, color):
+'''Map'''
+class Map():
+	# Creates a map of blocks
+	def create(self):
+		# Loops through rows
+		row = 0
+		for list in map.map1:
+			# Loops through columns
+			column = 0
+			for tile in list:
+				# If there is a tile it gets added to the block list
+				if tile:
+					blocks.append(Block(tile_size * column, tile_size * row, tile_size, tile_size, config.BLOCK_COLOR))
+				column += 1
+			row += 1
+
+	# Draws all tiles in block list
+	def draw(self):
+		for block in blocks:
+			block.draw_rect()
+
+
+
+
+'''Block'''
+class Block(Object, Draw_object):
+	def __init__(self, x, y, height, width, color):
+		super().__init__(x, y, height, width, color)
+
+'''Player'''
+class Player(Moving_object, Draw_object):
+	def __init__(self, x, y, height, width, speed, color, controls):
 		super().__init__(x, y, height, width, speed, color)
 		self.points = (pygame.math.Vector2(0, self.height * 0.75), pygame.math.Vector2(self.width / 2, self.height * -0.25), pygame.math.Vector2(self.width / -2, self.height * -0.25))
 		self.keys = [False, False, False, False, False]
@@ -37,6 +68,7 @@ class Triangle(Object, Move_object, Draw_object):
 		self.vector_vel = pygame.math.Vector2(0, 0)
 		self.center = pygame.math.Vector2(x, (y + (self.height * 0.75)))
 		self.rot_speed = 10
+		self.controls = controls
 
 	def update(self):
 		self.player_inputs()			# Executes player inputs
@@ -74,6 +106,7 @@ class Triangle(Object, Move_object, Draw_object):
 				self.vector_vel += pygame.math.Vector2(1, 0)
 		else:
 			self.vector_vel = pygame.math.Vector2(0, 0)
+
 
 
 def check_events():
@@ -117,7 +150,12 @@ def grid():
 			pygame.draw.line(config.screen, (255, 255, 255), (0, i * tile_size), (config.SCREEN_X, i * tile_size))
 		i += 1
 
-p1 = Triangle(100, 100, 30, 20, 800, (100, 0, 100))
+p1 = Player(100, 100, 30, 20, 800, (100, 0, 100), 1)
+
+blocks = []
+map1 = Map()
+map1.create()
+
 
 # Game loop
 while True:
@@ -132,7 +170,8 @@ while True:
 
 	# Update boids, hoiks and obstacles
 	p1.update()
-	grid()
+	#grid()
+	map1.draw()
 
 	# Update display too show new frame
 	pygame.display.update()
