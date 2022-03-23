@@ -59,16 +59,15 @@ class Block(Object, Draw_object):
 
 '''Player'''
 class Player(Moving_object, Draw_object):
-	def __init__(self, x, y, height, width, speed, color, controls):
+	def __init__(self, x, y, height, width, speed, color):
 		super().__init__(x, y, height, width, speed, color)
 		self.points = (pygame.math.Vector2(0, self.height * 0.75), pygame.math.Vector2(self.width / 2, self.height * -0.25), pygame.math.Vector2(self.width / -2, self.height * -0.25))
 		self.keys = [False, False, False, False, False]
 		self.moving_dir = 0
 		self.facing_dir = pygame.math.Vector2(0, 0).angle_to(self.points[0])
 		self.vector_vel = pygame.math.Vector2(0, 0)
-		self.center = pygame.math.Vector2(x, (y + (self.height * 0.75)))
 		self.rot_speed = 10
-		self.controls = controls
+		self.lives = 3
 
 	def update(self):
 		self.player_inputs()			# Executes player inputs
@@ -118,11 +117,13 @@ def check_events():
 		if event.type == pygame.QUIT:
 			pygame.quit()
 			exit()
+		# Check if a key is pressed
 		if event.type == pygame.KEYDOWN:
 			# Quit game with ESC
 			if event.key == pygame.K_ESCAPE:
 				pygame.quit()
 				exit()
+			# Player1 keys
 			if event.key == pygame.K_w:
 				p1.keys[0] = True
 			if event.key == pygame.K_a:
@@ -131,7 +132,20 @@ def check_events():
 				p1.keys[2] = True
 			if event.key == pygame.K_d:
 				p1.keys[3] = True
+			
+			# Player2 keys
+			if event.key == pygame.K_UP:
+				p2.keys[0] = True
+			if event.key == pygame.K_LEFT:
+				p2.keys[1] = True
+			if event.key == pygame.K_DOWN:
+				p2.keys[2] = True
+			if event.key == pygame.K_RIGHT:
+				p2.keys[3] = True
+
+		# Check if a key is relesed
 		if event.type == pygame.KEYUP:
+			# Player1 keys
 			if event.key == pygame.K_w:
 				p1.keys[0] = False
 			if event.key == pygame.K_a:
@@ -140,17 +154,21 @@ def check_events():
 				p1.keys[2] = False
 			if event.key == pygame.K_d:
 				p1.keys[3] = False
+			
+			# Player2 keys
+			if event.key == pygame.K_UP:
+				p2.keys[0] = False
+			if event.key == pygame.K_LEFT:
+				p2.keys[1] = False
+			if event.key == pygame.K_DOWN:
+				p2.keys[2] = False
+			if event.key == pygame.K_RIGHT:
+				p2.keys[3] = False
 
 tile_size = 40
-def grid():
-	i = 1
-	while i < 27:
-		pygame.draw.line(config.screen, (255, 255, 255), (i * tile_size, 0), (i * tile_size, config.SCREEN_Y))
-		if i < 18:
-			pygame.draw.line(config.screen, (255, 255, 255), (0, i * tile_size), (config.SCREEN_X, i * tile_size))
-		i += 1
 
-p1 = Player(100, 100, 30, 20, 800, (100, 0, 100), 1)
+p1 = Player(100, 100, 30, 20, 800, (100, 0, 100))
+p2 = Player(100, 100, 30, 20, 800, (100, 0, 100))
 
 blocks = []
 map1 = Map()
@@ -170,7 +188,7 @@ while True:
 
 	# Update boids, hoiks and obstacles
 	p1.update()
-	#grid()
+	p2.update()
 	map1.draw()
 
 	# Update display too show new frame
