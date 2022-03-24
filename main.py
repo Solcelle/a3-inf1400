@@ -49,9 +49,6 @@ class Map():
 		for block in blocks:
 			block.draw_rect()
 
-
-
-
 '''Block'''
 class Block(Object, Draw_object):
 	def __init__(self, x, y, height, width, color):
@@ -63,49 +60,32 @@ class Player(Moving_object, Draw_object):
 		super().__init__(x, y, height, width, speed, color)
 		self.points = (pygame.math.Vector2(0, self.height * 0.75), pygame.math.Vector2(self.width / 2, self.height * -0.25), pygame.math.Vector2(self.width / -2, self.height * -0.25))
 		self.keys = [False, False, False, False, False]
-		self.moving_dir = 0
-		self.facing_dir = pygame.math.Vector2(0, 0).angle_to(self.points[0])
 		self.vector_vel = pygame.math.Vector2(0, 0)
-		self.rot_speed = 10
+		self.rot_speed = 400
 		self.lives = 3
 
 	def update(self):
 		self.player_inputs()			# Executes player inputs
 		self.move()						# Move object
-		self.player_direction()			# Updates objects direction
-		self.rotate()					# Rotates object
 		self.draw_poligon()				# Draw object
-	
-	# Rotates object by angle(-180 to 180)
-	def rotate(self):
-		a = (self.moving_dir - self. facing_dir + 180) % 360 - 180
-		if abs(a) > 8:
-			# Rotate right
-			if a > 0:
-				self.points = [pygame.math.Vector2(p).rotate(self.rot_speed) for p in self.points]
-			# Rotate left
-			if a < 0:
-				self.points = [pygame.math.Vector2(p).rotate(-self.rot_speed) for p in self.points]
-		
-	def player_direction(self):
-		if not (self.vector_vel.x == 0 and self.vector_vel.y == 0):
-			self.moving_dir = pygame.math.Vector2(0, 0).angle_to(self.vector_vel)
-		self.facing_dir = pygame.math.Vector2(0, 0).angle_to(self.points[0])
 	
 	# Executes players inputs
 	def player_inputs(self):
 		if any(self.keys):
-			if self.keys[0]:	# Up
-				self.vector_vel += pygame.math.Vector2(0, -1)
-			if self.keys[1]:	# Left
-				self.vector_vel += pygame.math.Vector2(-1, 0)
-			if self.keys[2]:	# Down
-				self.vector_vel += pygame.math.Vector2(0, 1)
+			if self.keys[0]:	# Thrust
+				self.vector_vel += self.points[0]
+			else:
+				self.vector_vel = pygame.math.Vector2(0, 0)
+			if self.keys[1]:	# Rotate left
+				self.points = [pygame.math.Vector2(p).rotate(-self.rot_speed * time_passed) for p in self.points]
+			if self.keys[2]:	# Shoot
+				pass
 			if self.keys[3]:	# Right
-				self.vector_vel += pygame.math.Vector2(1, 0)
+				self.points = [pygame.math.Vector2(p).rotate(self.rot_speed * time_passed) for p in self.points]
 		else:
 			self.vector_vel = pygame.math.Vector2(0, 0)
-
+	
+	# def collision(self):
 
 
 def check_events():
@@ -125,51 +105,49 @@ def check_events():
 				exit()
 			# Player1 keys
 			if event.key == pygame.K_w:
-				p1.keys[0] = True
+				players[0].keys[0] = True
 			if event.key == pygame.K_a:
-				p1.keys[1] = True
+				players[0].keys[1] = True
 			if event.key == pygame.K_s:
-				p1.keys[2] = True
+				players[0].keys[2] = True
 			if event.key == pygame.K_d:
-				p1.keys[3] = True
+				players[0].keys[3] = True
 			
 			# Player2 keys
 			if event.key == pygame.K_UP:
-				p2.keys[0] = True
+				players[1].keys[0] = True
 			if event.key == pygame.K_LEFT:
-				p2.keys[1] = True
+				players[1].keys[1] = True
 			if event.key == pygame.K_DOWN:
-				p2.keys[2] = True
+				players[1].keys[2] = True
 			if event.key == pygame.K_RIGHT:
-				p2.keys[3] = True
+				players[1].keys[3] = True
 
 		# Check if a key is relesed
 		if event.type == pygame.KEYUP:
 			# Player1 keys
 			if event.key == pygame.K_w:
-				p1.keys[0] = False
+				players[0].keys[0] = False
 			if event.key == pygame.K_a:
-				p1.keys[1] = False
+				players[0].keys[1] = False
 			if event.key == pygame.K_s:
-				p1.keys[2] = False
+				players[0].keys[2] = False
 			if event.key == pygame.K_d:
-				p1.keys[3] = False
+				players[0].keys[3] = False
 			
 			# Player2 keys
 			if event.key == pygame.K_UP:
-				p2.keys[0] = False
+				players[1].keys[0] = False
 			if event.key == pygame.K_LEFT:
-				p2.keys[1] = False
+				players[1].keys[1] = False
 			if event.key == pygame.K_DOWN:
-				p2.keys[2] = False
+				players[1].keys[2] = False
 			if event.key == pygame.K_RIGHT:
-				p2.keys[3] = False
+				players[1].keys[3] = False
 
 tile_size = 40
 
-p1 = Player(100, 100, 30, 20, 800, (100, 0, 100))
-p2 = Player(100, 100, 30, 20, 800, (100, 0, 100))
-
+players = [Player(100, 100, 30, 20, 200, (100, 0, 100)), Player(100, 100, 30, 20, 200, (100, 0, 100))]
 blocks = []
 map1 = Map()
 map1.create()
@@ -187,8 +165,7 @@ while True:
 	config.screen.fill(config.BACKGROUND_COLOR)
 
 	# Update boids, hoiks and obstacles
-	p1.update()
-	p2.update()
+	for p in players: p.update() 
 	map1.draw()
 
 	# Update display too show new frame
