@@ -20,13 +20,19 @@ class Moving_object(Object):
 		if self.vector_vel.x != 0 or self.vector_vel.y != 0:
 			self.vector_vel = pygame.math.Vector2.normalize(self.vector_vel)
 		self.vector_pos += pygame.math.Vector2(self.vector_vel * self.speed * time_passed)
+		if self.respawn:
+			self.vector_pos = pygame.math.Vector2(self.spawn.x, self.spawn.y)
+			self.respawn = False
 
 '''Draw object'''
 class Draw_object():
 	def draw_rect(self):
-		pygame.draw.rect(config.screen, self.color, (self.vector_pos.x, self.vector_pos.y, self.width, self.height))
+		self.rect = pygame.draw.rect(config.screen, self.color, (self.vector_pos.x, self.vector_pos.y, self.width, self.height))
 	def draw_poligon(self):
-		pygame.draw.polygon(config.screen, self.color, [p + self.vector_pos for p in self.points])
+		self.rect = pygame.draw.polygon(config.screen, self.color, [p + self.vector_pos for p in self.points])
+	@staticmethod
+	def draw_img(img, x, y):
+		config.screen.blit(img, (x, y))
 
 '''Map'''
 class Map():
@@ -63,11 +69,16 @@ class Player(Moving_object, Draw_object):
 		self.vector_vel = pygame.math.Vector2(0, 0)
 		self.rot_speed = 400
 		self.lives = 3
+		self.spawn = pygame.math.Vector2(x, y)
+		self.respawn = False
+		self.explode = (False, 0, 0)
 
 	def update(self):
 		self.player_inputs()			# Executes player inputs
 		self.move()						# Move object
 		self.draw_poligon()				# Draw object
+		for block in blocks: player.check_collision(block)
+		self.explosion()
 	
 	# Executes players inputs
 	def player_inputs(self):
@@ -84,9 +95,16 @@ class Player(Moving_object, Draw_object):
 				self.points = [pygame.math.Vector2(p).rotate(self.rot_speed * time_passed) for p in self.points]
 		else:
 			self.vector_vel = pygame.math.Vector2(0, 0)
-	
-	# def collision(self):
 
+	def check_collision(self, other):
+		if pygame.Rect.colliderect(self.rect, other.rect):
+			self.explode = (True, self.vector_pos.x, self.vector_pos.y)
+			self.respawn = True
+			self.lives -= 1
+	
+	def explosion(self):
+		if self.explode[0]:
+			self.draw_img(config.explosion_img, self.explode[1] - (tile_size / 2), self.explode[2] - (tile_size / 2))
 
 def check_events():
 	# Check for events
@@ -147,7 +165,7 @@ def check_events():
 
 tile_size = 40
 
-players = [Player(100, 100, 30, 20, 200, (100, 0, 100)), Player(100, 100, 30, 20, 200, (100, 0, 100))]
+players = [Player(100, 100, 30, 20, 400, (100, 0, 100)), Player(900, 620, 30, 20, 400, (100, 0, 100))]
 blocks = []
 map1 = Map()
 map1.create()
@@ -164,9 +182,11 @@ while True:
 	# Set background colour
 	config.screen.fill(config.BACKGROUND_COLOR)
 
-	# Update boids, hoiks and obstacles
-	for p in players: p.update() 
+	# Draw map
 	map1.draw()
+
+	# Update players
+	for player in players: player.update()
 
 	# Update display too show new frame
 	pygame.display.update()

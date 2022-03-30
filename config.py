@@ -19,3 +19,6 @@ BLOCK_COLOR = (120, 120, 160)
 # Player
 P1_CONTROLS = 1	# W, A, S, D
 P2_CONTROLS = 2	# UP, LEFT, DOWN, RIGHT
+
+explosion_img = pygame.image.load("explosion.png").convert_alpha()
+explosion_img = pygame.transform.scale(explosion_img, (40, 40))
