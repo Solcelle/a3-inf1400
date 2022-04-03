@@ -1,3 +1,4 @@
+import time
 import config
 import map
 import pygame
@@ -15,14 +16,11 @@ class Moving_object(Object):
 	def __init__(self, x, y, height, width, speed, color):
 		super().__init__(x, y, height, width, color)
 		self.speed = speed
+		self.vector_vel = pygame.math.Vector2(0, 0)
 
 	def move(self):
-		if self.vector_vel.x != 0 or self.vector_vel.y != 0:
-			self.vector_vel = pygame.math.Vector2.normalize(self.vector_vel)
 		self.vector_pos += pygame.math.Vector2(self.vector_vel * self.speed * time_passed)
-		if self.respawn:
-			self.vector_pos = pygame.math.Vector2(self.spawn.x, self.spawn.y)
-			self.respawn = False
+		
 
 '''Draw object'''
 class Draw_object():
@@ -60,13 +58,26 @@ class Block(Object, Draw_object):
 	def __init__(self, x, y, height, width, color):
 		super().__init__(x, y, height, width, color)
 
+'''Bullet'''
+class Bullet(Moving_object, Draw_object):
+	def __init__(self, x, y, height, width, speed, color, dir):
+		super().__init__(x, y, height, width, speed, color)
+		self.dir = dir
+
+	def update(self):
+		self.move()
+		self.draw_rect()
+	
+	@staticmethod
+	def create_bullet(x, y, dir):
+		bullets.append(Bullet(x, y, config.BULLET_HEIGHT, config.BULLET_WIDTH, config.BULLET_SPEED, config.BULLET_COLOR, dir))
+
 '''Player'''
 class Player(Moving_object, Draw_object):
 	def __init__(self, x, y, height, width, speed, color):
 		super().__init__(x, y, height, width, speed, color)
 		self.points = (pygame.math.Vector2(0, self.height * 0.75), pygame.math.Vector2(self.width / 2, self.height * -0.25), pygame.math.Vector2(self.width / -2, self.height * -0.25))
 		self.keys = [False, False, False, False, False]
-		self.vector_vel = pygame.math.Vector2(0, 0)
 		self.rot_speed = 400
 		self.lives = 3
 		self.spawn = pygame.math.Vector2(x, y)
@@ -76,33 +87,57 @@ class Player(Moving_object, Draw_object):
 	def update(self):
 		self.player_inputs()									# Executes player inputs
 		self.move()												# Move object
+		self.explosion()										# Draw explosion
+		self.player_respawn()									# Respawn object
 		self.draw_poligon()										# Draw object
 		for block in blocks: player.check_collision(block)		# Check collisions
-		self.explosion()										# Draw explosion
 
+		for bullet in bullets: bullet.update()
 	
 	# Executes players inputs
 	def player_inputs(self):
-		if any(self.keys):
-			if self.keys[0]:	# Thrust
-				self.vector_vel += self.points[0]
-			else:
-				self.vector_vel = pygame.math.Vector2(0, 0)
-			if self.keys[1]:	# Rotate left
-				self.points = [pygame.math.Vector2(p).rotate(-self.rot_speed * time_passed) for p in self.points]
-			if self.keys[2]:	# Shoot
-				pass
-			if self.keys[3]:	# Right
-				self.points = [pygame.math.Vector2(p).rotate(self.rot_speed * time_passed) for p in self.points]
+		# If thrust...
+		if self.keys[0]:	
+			thrust_dir = pygame.math.Vector2.normalize(self.points[0])
+			self.vector_vel.x += thrust_dir.x * config.ACCEL_SPEED
+			self.vector_vel.y += thrust_dir.y * (config.ACCEL_SPEED * 4)
+		# Else reduce direction speed and add gravity
 		else:
-			self.vector_vel = pygame.math.Vector2(0, 0)
+			self.vector_vel *= config.BREAK_SPEED
+			self.gravity()
+		# If rotate left...
+		if self.keys[1]:
+			self.points = [pygame.math.Vector2(p).rotate(-self.rot_speed * time_passed) for p in self.points]
+		# If rotate right...
+		if self.keys[3]:
+			self.points = [pygame.math.Vector2(p).rotate(self.rot_speed * time_passed) for p in self.points]
+		# If shoot...
+		if self.keys[2]:
+			if time.time() > (timer_start + config.BULLET_DELAY):
+				no_timer = True
+			if no_timer:
+				Bullet.create_bullet(self.vector_pos.x, self.vector_pos.y, pygame.math.Vector2(1, 1))
+				timer_start = time.time()
+				no_timer = False
 
+	# Adds gravity to player velocity
+	def gravity(self):
+		self.vector_vel.y += config.GRAVITY
+
+	# Respawn player
+	def player_respawn(self):
+		if self.respawn:
+			self.vector_pos = pygame.math.Vector2(self.spawn.x, self.spawn.y)
+			self.respawn = False
+
+	# Check for collision with rect
 	def check_collision(self, other):
 		if pygame.Rect.colliderect(self.rect, other.rect):
 			self.explode = (True, self.vector_pos.x, self.vector_pos.y)
 			self.respawn = True
 			self.lives -= 1
 	
+	# Check for explosion and draw explostion
 	def explosion(self):
 		if self.explode[0]:
 			self.draw_img(config.explosion_img, self.explode[1] - (tile_size / 2), self.explode[2] - (tile_size / 2))
@@ -165,12 +200,13 @@ def check_events():
 				players[1].keys[3] = False
 
 tile_size = 40
+timer_start = 0.0
 
 players = [Player(100, 100, 30, 20, 400, (100, 0, 100))]#, Player(900, 620, 30, 20, 400, (100, 0, 100))]
 blocks = []
+bullets = []
 map1 = Map()
 map1.create()
-
 
 # Game loop
 while True:
