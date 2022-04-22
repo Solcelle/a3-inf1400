@@ -186,8 +186,9 @@ class Player(Moving_object, Draw_object):
 
 					# Check if player hit other
 					if other.check_collision(bullet):
-						self.score += config.SCORE_AMOUNT	# Increase score
-						self.bullets.remove(bullet)			# Remove bullet
+						self.score += config.SCORE_AMOUNT			# Increase score
+						bullet.remove = True
+					if bullet.remove: self.bullets.remove(bullet)	# Remove bullet
 
 	def player_inputs(self):
 		'''Excecutes players inputs'''
