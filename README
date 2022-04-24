@@ -1,0 +1,23 @@
+Contols
+    Player1
+        Thrust:          W
+        Rotate left:     A
+        Rotate right:    D
+        Shoot:           SPACE
+    Player2
+        Thrust:          UP
+        Rotate left:     LEFT
+        Rotate right:    RIGHT
+        Shoot:           R-CTRL or R-SHIFT
+    Close game: ESC
+
+How to play
+    The objective of the game is to shoot the other player
+    to get the highest score.
+
+    Shooting the other player increases score with 100 points.
+
+    Dying reduces score wiht 100 points.
+
+    When thrusting, fuel is depleted. Collecting a fuel can
+    replenishes the players fuel.

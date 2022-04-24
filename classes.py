@@ -267,7 +267,9 @@ class Player(Moving_object, Draw_object):
 		if self.explode[0]:
 			self.draw_img(config.explosion_img, self.explode[1] - (config.BLOCK_SIZE / 2), self.explode[2] - (config.BLOCK_SIZE / 2))
 
-players = [Player(config.P1_SPAWN.x, config.P1_SPAWN.y, config.P1_COLOR, config.P1_TOP_HUD), Player(config.P2_SPAWN.x, config.P2_SPAWN.y, config.P2_COLOR, config.P2_TOP_HUD)]
+players = [
+Player(config.P1_SPAWN.x, config.P1_SPAWN.y, config.P1_COLOR, config.P1_TOP_HUD),
+Player(config.P2_SPAWN.x, config.P2_SPAWN.y, config.P2_COLOR, config.P2_TOP_HUD)]
 items = [Fuel_can(565, 90), Fuel_can(445, 550)]
 map1 = Map()
 blocks = map1.convert_map(map.map1)

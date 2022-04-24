@@ -18,11 +18,8 @@ def main():
 		# Draw map
 		classes.map1.draw()
 
-		# Update players
-		for player in classes.players: player.update()
-
-		# Update items
-		for item in classes.items: item.update()
+		# Update objects
+		for object in classes.players or classes.items: object.update()
 
 		# Update display too show new frame
 		pygame.display.update()

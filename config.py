@@ -12,7 +12,7 @@ screen = pygame.display.set_mode((SCREEN_X, SCREEN_Y), 0, 32)
 # General
 GAME_TICK = 144
 clock = pygame.time.Clock()
-BACKGROUND_COLOR = (20, 22, 30)
+BACKGROUND_COLOR = (23, 26, 38)
 GRAVITY = 0.014
 SCORE_AMOUNT = 100
 
@@ -28,19 +28,19 @@ ROTATION_SPEED = 250
 
 # Player 1
 P1_CONTROLS = 1	# W, A, D, SPACE
-P1_COLOR = (200, 150, 0)
+P1_COLOR = (212, 134, 57)
 P1_SPAWN = pygame.Vector2(140, 200)
 P1_TOP_HUD = pygame.Vector2(43, 10)
 
 # Player 2
 P2_CONTROLS = 2	# UP, LEFT, RIGHT, L-CTRL (or L-SHIFT)
-P2_COLOR = (100, 0, 100)
+P2_COLOR = (166, 22, 166)
 P2_SPAWN = pygame.Vector2(940, 520)
 P2_TOP_HUD = pygame.Vector2(720, 10)
 
 
 # Block
-BLOCK_COLOR = (120, 120, 160)
+BLOCK_COLOR = (103, 103, 166)
 BLOCK_SIZE = 40
 
 
