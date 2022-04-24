@@ -25,3 +25,18 @@ class Daisy(Plant):
 Plants = [Rose(), Tulip(), Daisy()]
 for plant in Plants:
     plant.grow()
+
+
+class Vehicle():
+    def __init__(self, grow_speed):
+        super().__init__(grow_speed)
+
+class Engine():
+    def create():
+        pass
+
+
+class Car(Vehicle):
+    def __init__(self, speed, power):
+        super().__init__(speed)
+        self.engine = Engine(power)

@@ -1,3 +1,4 @@
+'''This module provides classes for the Mayhem game'''
 import pygame
 import time
 import config
@@ -235,7 +236,7 @@ class Player(Moving_object, Draw_object):
 		self.vector_pos = pygame.Vector2(self.spawn.x, self.spawn.y)	# Sets positon to spawn
 		self.vector_vel = pygame.Vector2(0, 0)							# Reset velocity
 		self.fuel.fuel_amount = self.fuel.width							# Reset fuel
-		self.score -= config.SCORE_AMOUNT								# Reduces score
+		if self.score > 0 : self.score -= config.SCORE_AMOUNT			# Reduces score
 		self.start = False												# Makes player stand still when respawn
 
 	def hud(self):
@@ -258,8 +259,8 @@ class Player(Moving_object, Draw_object):
 	def check_collect(self, item):
 		'''Checks if player collects an item'''
 		if pygame.Rect.colliderect(self.rect, item.rect) and not item.collected:
-			self.fuel.fuel_amount = self.fuel.width
-			item.collected = True
+			self.fuel.fuel_amount = self.fuel.width		# Sets player's fuel amout to full
+			item.collected = True						# Updates items collected status
 
 	def explosion(self):
 		'''Checks if player has exploded and if so draws explotion'''

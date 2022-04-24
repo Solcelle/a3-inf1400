@@ -58,7 +58,7 @@ def check_events():
 				classes.players[1].keys[0] = True
 			if event.key == pygame.K_LEFT:
 				classes.players[1].keys[1] = True
-			if event.key == pygame.K_RCTRL:
+			if event.key == pygame.K_RCTRL or event.key == pygame.K_RSHIFT:
 				classes.players[1].keys[2] = True
 			if event.key == pygame.K_RIGHT:
 				classes.players[1].keys[3] = True
@@ -80,7 +80,7 @@ def check_events():
 				classes.players[1].keys[0] = False
 			if event.key == pygame.K_LEFT:
 				classes.players[1].keys[1] = False
-			if event.key == pygame.K_RCTRL:
+			if event.key == pygame.K_RCTRL or event.key == pygame.K_RSHIFT:
 				classes.players[1].keys[2] = False
 			if event.key == pygame.K_RIGHT:
 				classes.players[1].keys[3] = False
